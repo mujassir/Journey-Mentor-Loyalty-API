@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5020:80"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Data Source=JourneyMentorLoyalty.db"
+      Redis__ConnectionString: "redis:6379"
+      LOG_FILE_PATH: "/app/logs/log.txt"
+      Authentication__Authority: "http://localhost:8080/realms/master"
+      Authentication__Audience: "account"
+      Authentication__RequireHttpsMetadata: "false"
+    depends_on:
+      - keycloak
+      - redis
+    volumes:
+      - ./logs:/app/logs
+
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.2.0
+    ports:
+      - "8080:8080"
+    command: start-dev
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
